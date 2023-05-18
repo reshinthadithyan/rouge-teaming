@@ -1,9 +1,9 @@
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, T5ForConditionalGeneration, T5Tokenizer
 import logging
+import openai
+import os
 
-
-
-
+logger = logging.getLogger(__name__)
 
 class ModelGenerate:
     def __init__(self,model_name:str,config:dict,preprocess:callable=None):
@@ -34,3 +34,18 @@ class ModelGenerate:
         return self.tokenizer.decode(output[0], skip_special_tokens=True)
         
 
+class OpenAI:
+    def __init__(self,model_name:str="text-davinci-003",config:dict):
+        #Call openai api with model_name
+        openai.api_key = os.environ["OPENAI_API_KEY"]
+        self.model_name = model_name
+        self.config = config
+    
+    def generate(self,input_prompt:str):
+        generated_text = openai.Completion.create(
+            model=self.model_name,
+            prompt=input_prompt,
+            max_tokens=self.config.max_len,
+            temperature=self.config.temperature
+                )
+        return generated_text["choices"][0]["text"]
